@@ -1,6 +1,6 @@
 package yonhapCrawler;
 
-import java.io.File;
+import java.io.File; 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -10,18 +10,27 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
 
 public class crawler {
 	private static String[] topics = {"politics","northkorea","economy","stock","it","society","local",
 		"entertainment","culture","sports","international","compatriot","section"};
 	private static String url = "";
-	private static String date = "2015/01/05";
+	private static String date = "";
+	private static String directory  = "";
 	private static JSONObject article = new JSONObject(); //Content, ImageList, DateTime, URL
 	private static JSONArray articleImageList = new JSONArray(); // List of Image
 
 	public static void main(String[] args) throws IOException,SocketTimeoutException{
 
-		File dirDate = new File("C:/Users/еб©М/Desktop/",date.replaceAll("/", ""));
+		Settings settings = new Settings();
+		new JCommander(settings, args);
+		
+		date = settings.getdate();
+		directory = settings.getDirectory();
+		
+		File dirDate = new File(directory,date.replaceAll("/", ""));
 		dirDate.mkdir();
 		//Iterate crawling for all topics
 		for(int topicCnt=0; topicCnt<13; topicCnt++){
@@ -45,11 +54,11 @@ public class crawler {
 				}
 				//Find all articles in given date
 				for(Element link: links){
-					
+
 					FileWriter fw = new FileWriter(dirTopic.getAbsolutePath()+"/"+topics[topicCnt]+"_"+articleNum+".json");
-					
+
 					String articleLink = link.attr("href");
-					
+
 					if(articleLink.contains(date)){
 						Document doc = Jsoup.connect(articleLink.toString()).get();
 						Element publishDate = doc.getElementsByClass("pblsh").first();
@@ -73,15 +82,15 @@ public class crawler {
 						String content = tidy.text();
 						article.put("images",articleImageList);
 						article.put("content",content);
-						
+
 						boolean isImageTag = false;				
 						int imgCounter = 0;
 						JSONObject[] articleImage = new JSONObject[10];
-						
+
 						for(Element surplus: surplusContent){
-							
+
 							String imageInfo = surplus.html().toString();
-							
+
 							if(imageInfo.startsWith("<img src")==true){
 								articleImage[imgCounter] = new JSONObject();
 								String[] temp = imageInfo.split("\"");
@@ -116,6 +125,25 @@ public class crawler {
 				e.printStackTrace();
 			}
 		}
-
 	}
+}
+
+//Get 1) Article Published [Date],2) [Directory] to save Articles by Arguments
+
+class Settings {
+
+	@Parameter(names = "-d", description = "Published Date of Article", required = true)
+	private String date;
+
+	@Parameter(names = "-f", description = "Directory to Save Articles", required = true)
+	private String directory;
+	
+    public String getdate() {
+        return date;
+    }
+
+    public String getDirectory() {
+        return directory;
+    }
+    
 }
