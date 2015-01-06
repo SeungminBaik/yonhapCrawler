@@ -21,16 +21,16 @@ public class crawler {
 	private static String directory  = "";
 	private static JSONObject article = new JSONObject(); //Content, ImageList, DateTime, URL
 	private static JSONArray articleImageList = new JSONArray(); // List of Image
-
+	private static int errorCnt = 0;
 	public static void main(String[] args) throws IOException,SocketTimeoutException{
 
 		Settings settings = new Settings();
 		new JCommander(settings, args);
 		
-		date = settings.getdate();
+		date = settings.getdate().replaceAll("-", "");
 		directory = settings.getDirectory();
 		
-		File dirDate = new File(directory,date.replaceAll("-", ""));
+		File dirDate = new File(directory,date);
 		dirDate.mkdir();
 		//Iterate crawling for all topics
 		for(int topicCnt=0; topicCnt<13; topicCnt++){
@@ -53,13 +53,16 @@ public class crawler {
 					if(redunChecker == 0) links.add(link);
 				}
 				//Find all articles in given date
+				
+				int numOfArticleLink = links.size();
+				
 				for(Element link: links){
-
-					FileWriter fw = new FileWriter(dirTopic.getAbsolutePath()+"/"+topics[topicCnt]+"_"+articleNum+".json");
-
+					
 					String articleLink = link.attr("href");
 
-					if(articleLink.contains(date)){
+					if(articleLink.contains(date)&&articleLink.contains("HTTP")){
+						FileWriter fw = new FileWriter(dirTopic.getAbsolutePath()+"/"+topics[topicCnt]+"_"+articleNum+".json");
+						System.out.println(articleLink.toString());
 						Document doc = Jsoup.connect(articleLink.toString()).get();
 						Element publishDate = doc.getElementsByClass("pblsh").first();
 						String pblshDate = publishDate.text().subSequence(0, 10).toString();	
@@ -118,13 +121,14 @@ public class crawler {
 						article.clear();
 						fw.flush();
 						fw.close();
-						articleNum++;
+						if(article != null) articleNum++;
 					}
 				}
 			}catch (Exception e) {
-				e.printStackTrace();
+				errorCnt++;
 			}
 		}
+		System.out.println("There were "+errorCnt+" errors while crawling.");
 	}
 }
 
