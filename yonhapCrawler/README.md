@@ -2,9 +2,7 @@
 
 ## Requirements
 
--Java
-
--Eclipse
+-Java (JDK 1.6 +)
 
 -Required Packages are as below. Available at given link. Add these as external libraries.
 
@@ -19,7 +17,7 @@
 - Go Run Configurations > Arguments > Program Arguments
 - Type article published date and save directory you want as below
 
-  '-f [Directory] -d [Date]'   (e.g. -f C:\Users\Wook\Desktop -d 2015/01/04)
+  '-f [Directory] -d [Date]'   (e.g. -f C:\Users\Wook\Desktop -d 2015-01-04)
 
 - Run the code
 
